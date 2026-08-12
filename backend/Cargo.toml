@@ -1,0 +1,51 @@
+[package]
+name = "ryu-blueprint"
+version = "0.1.11"
+edition = "2021"
+license = "Apache-2.0"
+description = "Visual plan review for Ryu: an agent publishes a plan as markdown over MCP, this sidecar splits it into content-addressed blocks and a derived step DAG (with a longest-path layered layout so the reviewer's graph needs no client-side layout engine), stores every revision immutably, collects human annotations (comment / redline / question / blocker) and a verdict, and renders the verdict back as deterministic agent-readable text. ZERO dependency on apps/core — the sidecar reaches the host only over the generic app-event emit callback."
+repository = "https://github.com/amajorai/ryu"
+
+# The out-of-process sidecar binary. Core spawns it (`kind: local`, sibling on
+# PATH / `RYU_BLUEPRINT_BIN`), health-checks it, and proxies `/api/blueprint/*` to
+# it on loopback — exactly like `ryu-reasoning` / `ryu-monitors`.
+[[bin]]
+name = "ryu-blueprint"
+path = "src/main.rs"
+
+# The lib exists so the deterministic core (parse / graph / diff / feedback) is
+# unit-testable without a server, and so the `mcp` subcommand and the HTTP layer
+# share ONE implementation instead of drifting into two. It is not a Core-facing
+# surface: nothing links this crate in-process.
+[lib]
+name = "ryu_blueprint"
+path = "src/lib.rs"
+
+# Versions are matched to apps/core/Cargo.toml so a future in-process merge has no
+# version skew. This crate has ZERO dependency on apps/core, and deliberately adds
+# NOTHING new to the root Cargo.lock — every crate below is already in the graph.
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+dirs = "5"
+# Block ids are a content hash, so the hash function is part of the wire contract:
+# it decides which blocks a revision keeps and therefore which annotations survive
+# a revise. sha2 is already in the workspace graph (apps/core and eight sibling
+# crates pull 0.10); blake3 is not, and adding it would mean a new lockfile entry
+# in a working tree several jobs share.
+sha2 = "0.10"
+# The app-event emit client: raises the `contributes.hook_events` this app declares
+# (`plan.published` / `plan.approved` / `plan.changes_requested` / `step.completed`)
+# so plugin hooks and event-triggered workflows can react without this crate knowing
+# they exist. Emitting is best-effort and no-ops when the process is not Core-hosted,
+# which is what keeps this crate's own tests runnable standalone. ZERO apps/core dep.
+# The `version =` next to `path =` is MANDATORY: the published satellite tree has no
+# sibling `crates/`, so it resolves this from the registry instead.
+ryu-app-events = { path = "../crates/core/app-events", version = "0.1.11" }
