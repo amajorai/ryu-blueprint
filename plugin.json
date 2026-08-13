@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ryu.blueprint",
+  "version": "1.0.0",
+  "description": "Visual plan review: publish a plan as blocks plus a dependency graph, let a human annotate and decide it, and read the verdict back as structured text.",
+  "keywords": [
+    "planning",
+    "review",
+    "annotation",
+    "dependency-graph",
+    "human-in-the-loop"
+  ],
+  "extensions": {
+    "com.ryuhq.ryu": {
+      "id": "@ryu/blueprint",
+      "displayName": "Blueprint"
+    }
+  }
+}
