@@ -1,0 +1,27 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ryu.blueprint",
+  "version": "0.1.14",
+  "description": "Review an agent's plan before it touches a file. The agent publishes its plan over MCP; Blueprint parses the markdown into addressable blocks and renders it next to a dependency graph derived from the steps' own `depends_on` edges — so the two questions a wall of markdown cannot answer become visible at a glance: what actually has to happen first, and which step is the one everything else is waiting on. A plan reads as a sequence because prose is a sequence; the work almost never is. You annotate what you object to, anchored to the block or step it belongs to — a comment, a redline carrying the replacement text you want, a question, or a blocker — and then approve or request changes. The verdict is not a mood: it is a document. Requesting changes serializes every annotation into deterministic text the agent reads back through `blueprint__plan_status`, each finding naming the step or block it attaches to and, for a redline, the exact substitution proposed, so a revision answers what was actually written rather than what a summary of it sounded like. Re-publishing under the same plan id appends a revision instead of creating a new plan, and block ids are content-stable across revisions, so the second draft arrives as a diff against the first — the paragraphs you already read are still the paragraphs you already read.",
+  "keywords": [
+    "planning",
+    "review",
+    "annotation",
+    "dependency-graph",
+    "approval",
+    "code-review",
+    "human-in-the-loop",
+    "markdown"
+  ],
+  "extensions": {
+    "com.ryuhq.ryu": {
+      "id": "@ryu/blueprint",
+      "displayName": "Blueprint",
+      "mcp": {
+        "blueprint": {
+          "description": "Publish a plan for a human to review, and read the verdict back as text. Reach for this before a change that is expensive to undo — a migration, a refactor across many files, anything where the wrong first step wastes the rest. `plan_publish` posts numbered steps with their `depends_on` edges and returns a review url; `plan_status` polls for the verdict with a bounded wait and returns the reviewer's annotations already serialized into readable findings; `plan_get` fetches the whole plan with its annotations; `step_update` marks a step done as the work lands, so the reviewer watching the graph sees progress without being asked."
+        }
+      }
+    }
+  }
+}
