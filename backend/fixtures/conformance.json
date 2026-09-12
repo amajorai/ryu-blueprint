@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "diamond",
+      "expected": "layout",
+      "steps": [
+        { "id": "plan", "depends_on": [] },
+        { "id": "backend", "depends_on": ["plan"] },
+        { "id": "frontend", "depends_on": ["plan"] },
+        { "id": "integrate", "depends_on": ["backend", "frontend"] },
+        { "id": "release", "depends_on": ["integrate"] }
+      ],
+      "placements": [
+        { "step_id": "plan", "layer": 0, "order": 0 },
+        { "step_id": "backend", "layer": 1, "order": 0 },
+        { "step_id": "frontend", "layer": 1, "order": 1 },
+        { "step_id": "integrate", "layer": 2, "order": 0 },
+        { "step_id": "release", "layer": 3, "order": 0 }
+      ]
+    },
+    {
+      "id": "longest_path",
+      "expected": "layout",
+      "steps": [
+        { "id": "root", "depends_on": [] },
+        { "id": "short", "depends_on": ["root"] },
+        { "id": "long", "depends_on": ["short"] },
+        { "id": "join", "depends_on": ["root", "long"] }
+      ],
+      "placements": [
+        { "step_id": "root", "layer": 0, "order": 0 },
+        { "step_id": "short", "layer": 1, "order": 0 },
+        { "step_id": "long", "layer": 2, "order": 0 },
+        { "step_id": "join", "layer": 3, "order": 0 }
+      ]
+    },
+    {
+      "id": "cycle",
+      "expected": "cycle",
+      "steps": [
+        { "id": "a", "depends_on": ["c"] },
+        { "id": "b", "depends_on": ["a"] },
+        { "id": "c", "depends_on": ["b"] }
+      ],
+      "cycle_contains": ["a", "b", "c"]
+    },
+    {
+      "id": "unknown_dependency",
+      "expected": "unknown_dependency",
+      "steps": [{ "id": "publish", "depends_on": ["missing"] }],
+      "error": { "step": "publish", "depends_on": "missing" }
+    },
+    {
+      "id": "duplicate_step",
+      "expected": "duplicate_step",
+      "steps": [
+        { "id": "review", "depends_on": [] },
+        { "id": "review", "depends_on": [] }
+      ],
+      "error": { "id": "review" }
+    }
+  ]
+}
